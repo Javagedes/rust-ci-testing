@@ -35,8 +35,15 @@ jobs:
             echo "Cache hit!";
           else
             echo "Cache miss!";
-          fi      
-      
+          fi
+      - name: Install rust tools
+        run: |
+          # Extract tools section from toolchain.toml
+          sed -n '/\[tools\]/,/^$/p' toolchain.toml | grep -v '\[tools\]' | while read -r line; do
+            TOOL_NAME=$(echo "$line" | awk -F'=' '{gsub(/ /, "", $1); print $1}')
+            TOOL_VERSION=$(echo "$line" | awk -F'=' '{gsub(/["'\'']/,"",$2); print $2}')
+            cargo install "$TOOL_NAME" --version "$TOOL_VERSION"
+          done             
       - name: Install Cargo dependencies
         run: |
           cargo install cargo-tarpaulin --version ${{ env.CARGO_TARPAULIN_VERSION }} || true
