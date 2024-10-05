@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TARPAULIN_VERSION: '0.31.2'
+
+jobs:
+  setup:
+    name: Setup Environment
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Tools are cached as a group. When one or more tools are updated, a new
+      # cache will be created.
+      - name: Cache Cargo Tools
+        uses: actions/cache@v4
+        with:
+          path: |
+             ~/.cargo/bin/
+             ~/.rustup/toolchains/
+          key: ${{ runner.os }}-cargo-tools-${{ env.CARGO_TARPAULIN_VERSION }}-${{ hashFiles('**/toolchain.toml')}}
+      
+      - name: Check cache hit/miss
+        run: |
+          if [ "${{ steps.cache-dependencies.outputs.cache-hit }}" == "true" ]; then
+            echo "Cache hit!";
+          else
+            echo "Cache miss!";
+          fi      
+      
+      - name: Install Cargo dependencies
+        run: |
+          cargo install cargo-tarpaulin --version ${{ env.CARGO_TARPAULIN_VERSION }} || true
+
+      - name: Run cargo-fmt
+        run: cargo fmt --all --check
+
+      - name: Run cargo-clippy
+        run: cargo clippy
+  
+      - name: Run cargo-tarpaulin
+        run: cargo tarpaulin --out Xml --timeout 180
+      
+      - name: Upload Code coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: cobertura.xml
