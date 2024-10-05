@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  CARGO_TARPAULIN_VERSION: '0.31.2'
-
 jobs:
   setup:
     name: Setup Environment
@@ -27,32 +24,25 @@ jobs:
           path: |
              ~/.cargo/bin/
              ~/.rustup/toolchains/
-          key: ${{ runner.os }}-cargo-tools-${{ env.CARGO_TARPAULIN_VERSION }}-${{ hashFiles('**/toolchain.toml')}}
-      
-      - name: Check cache hit/miss
-        run: |
-          if [ "${{ steps.cache-dependencies.outputs.cache-hit }}" == "true" ]; then
-            echo "Cache hit!";
-          else
-            echo "Cache miss!";
-          fi
+          key: ${{ runner.os }}-cargo-tools-${{ hashFiles('**/toolchain.toml')}}
+
       - name: Install rust tools
         run: |
           # Extract tools section from toolchain.toml
           sed -n '/\[tools\]/,/^$/p' toolchain.toml | grep -v '\[tools\]' | while read -r line; do
             TOOL_NAME=$(echo "$line" | awk -F'=' '{gsub(/ /, "", $1); print $1}')
             TOOL_VERSION=$(echo "$line" | awk -F'=' '{gsub(/["'\'']/,"",$2); print $2}')
-            cargo install "$TOOL_NAME" --version "$TOOL_VERSION"
-          done             
-      - name: Install Cargo dependencies
-        run: |
-          cargo install cargo-tarpaulin --version ${{ env.CARGO_TARPAULIN_VERSION }} || true
-
+            cargo install "$TOOL_NAME" --version "$TOOL_VERSION" || true
+          done
+              
       - name: Run cargo-fmt
         run: cargo fmt --all --check
 
       - name: Run cargo-clippy
         run: cargo clippy
+
+      - name: Build
+        run: cargo build
   
       - name: Run cargo-tarpaulin
         run: cargo tarpaulin --out Xml --timeout 180
