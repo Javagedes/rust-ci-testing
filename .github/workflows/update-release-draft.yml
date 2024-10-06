@@ -1,0 +1,25 @@
+
+name: Update Release Draft
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  draft:
+    name: Update Release Draft
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Build a Release Draft
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-draft-config.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
