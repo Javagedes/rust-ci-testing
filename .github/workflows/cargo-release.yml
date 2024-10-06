@@ -1,8 +1,7 @@
 name: Upload to Cargo
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch
 
 jobs:
   publish:
@@ -22,21 +21,65 @@ jobs:
     - name: Download Rust Tools
       uses: ./.github/actions/install-rust-tools
 
-    - name: Extract tag version
-      run: |
-        TAG=${GITHUB_REF##*/}
-        VERSION=${TAG#v}
-        echo "Version: $VERSION"
-        echo "version=$VERSION" >> $GITHUB_ENV
+    - name: Find Draft Release
+      uses: actions/github-script@v6
+      id: draft_release
+      with:
+        script: |
+          const { data: releases } = await github.rest.repos.listReleases({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+          });
 
-    - name: Update version in Cargo.toml
-      run: |
-          sed -i -E "s/^version = \".*\"/version = \"${{ env.version }}\"/" Cargo.toml
+          const draftReleases = releases.filter(release => release.draft);
+          if (draftReleases.length === 0) {
+            throw new Error('No draft releases found!');
+          } else if (draftReleases.length > 1) {
+            throw new Error(`Multiple draft releases found! (${draftReleases.length})`);
+          }
 
-    - name: Commit version update
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add Cargo.toml
-        git commit -m "Update version to ${{ env.version }}"
-        git push origin main
+          // Set the draft release ID as output
+          core.setOutput('id', draftReleases[0].id);
+
+    - name: Publish Draft Release
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const release_id = core.getInput('steps.draft_release.outputs.id');
+          const { data: release } = await github.rest.repos.getRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: release_id
+          });
+
+          if (!release.draft) {
+            throw new Error('The release is not a draft!');
+          }
+
+          await github.rest.repos.updateRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: release_id,
+            draft: false
+          });
+
+          core.notice(`Release '${release.name}' has been published successfully.`);
+          
+    #- name: Extract tag version
+    #  run: |
+    #    TAG=${GITHUB_REF##*/}
+    #    VERSION=${TAG#v}
+    #    echo "Version: $VERSION"
+    #    echo "version=$VERSION" >> $GITHUB_ENV
+
+    #- name: Update version in Cargo.toml
+    #  run: |
+    #      sed -i -E "s/^version = \".*\"/version = \"${{ env.version }}\"/" Cargo.toml
+
+    #- name: Commit version update
+    #  run: |
+    #    git config --global user.name "github-actions[bot]"
+    #    git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    #    git add Cargo.toml
+    #    git commit -m "Update version to ${{ env.version }}"
+    #    git push origin main
