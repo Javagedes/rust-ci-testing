@@ -62,9 +62,9 @@ jobs:
       with:
         script: |
           const workflowName = 'Update Release Draft'; // Replace with your workflow name
-          const delay = 30000; // Delay in milliseconds (30 seconds)
+          const delay = 10000; // Delay in milliseconds (10 seconds)
 
-          await new Promise(resolve =? setTimeout(resolve, delay));
+          await new Promise(resolve => setTimeout(resolve, delay));
 
           const { data: workflows } = await github.rest.actions.listWorkflows({
             owner: context.repo.owner,
