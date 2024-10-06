@@ -39,13 +39,13 @@ jobs:
           }
 
           // Set the draft release ID as output
-          core.setOutput('id', draftReleases[0].id);
+          core.exportVariable('release_id', draftReleases[0].id);
 
-    - name: Publish Draft Release
+    - name: Publish Draft Release ${{ env.release_id }}
       uses: actions/github-script@v6
       with:
         script: |
-          const release_id = core.getInput('steps.draft_release.outputs.id');
+          const release_id = process.env.release_id;
           const { data: release } = await github.rest.repos.getRelease({
             owner: context.repo.owner,
             repo: context.repo.repo,
