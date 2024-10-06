@@ -41,8 +41,63 @@ jobs:
           // Set the draft release ID as output
           console.log(draftReleases[0].id);
           core.exportVariable('release_id', draftReleases[0].id);
+          core.exportVariable('VERSION', draftReleases[0].name);
 
-    - name: Publish Draft Release ${{ env.release_id }}
+    - name: Update version in Cargo.toml
+      run: |
+          sed -i -E "s/^version = \".*\"/version = \"${{ env.version }}\"/" Cargo.toml
+
+    - name: Commit version update
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add Cargo.toml
+        git commit -m "Update version to ${{ env.version }}"
+        git push origin main 
+
+    - name: Wait for Draft Release Updater to finish
+      uses: actions/github-script@v6
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        script: |
+          const workflowName = 'Update Release Draft'; // Replace with your workflow name
+          const delay = 30000; // Delay in milliseconds (30 seconds)
+
+          await new Promise(resolve =? setTimeout(resolve, delay));
+
+          const { data: workflows } = await github.rest.actions.listWorkflows({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+          });
+
+          const workflow = workflows.workflows.find(wf => wf.name === workflowName);
+          if (!workflow) {
+            throw new Error(`Workflow "${workflowName}" not found.`);
+          }
+
+          let running = true;
+
+          while (running) {
+            const { data: runs } = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: workflow.id,
+              status: 'in_progress',
+            });
+
+            if (runs.total_count === 0) {
+              console.log(`No in-progress runs for workflow "${workflowName}".`);
+              running = false; // Exit the loop
+            } else {
+              console.log(`There are ${runs.total_count} in-progress runs for workflow "${workflowName}". Waiting...`);
+              await new Promise(resolve => setTimeout(resolve, delay)); // Wait before checking again
+            }
+          }
+
+          console.log(`Workflow "${workflowName}" has completed.`);
+          
+    - name: Publish Draft Release
       uses: actions/github-script@v6
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -66,7 +121,7 @@ jobs:
             release_id: release_id,
             draft: false
           });
-
+          
           core.notice(`Release '${release.name}' has been published successfully.`);
           
     #- name: Extract tag version
@@ -86,4 +141,4 @@ jobs:
     #    git config --global user.email "github-actions[bot]@users.noreply.github.com"
     #    git add Cargo.toml
     #    git commit -m "Update version to ${{ env.version }}"
-    #    git push origin main
+    #    git push origin main 
