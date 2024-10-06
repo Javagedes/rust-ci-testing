@@ -41,6 +41,7 @@ jobs:
           // Set the draft release ID as output
           console.log(draftReleases[0].id);
           core.exportVariable('release_id', draftReleases[0].id);
+          const version = draftReleases[0].name;
           const strippedVersion = version.startsWith('v') ? version.slice(1) : version;
           core.exportVariable('version', strippedVersion);
 
