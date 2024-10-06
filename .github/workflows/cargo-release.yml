@@ -1,0 +1,25 @@
+name: Upload to Cargo
+
+on:
+  release:
+    types: [published]
+
+  jobs:
+    publish:
+      name: Publish to Crates.io
+
+      runs-on: ubuntu-latest
+
+      steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Rust Tools
+        uses: ./.github/actions/install-rust-tools
+
+      - name: Extract tag version
+        run: |
+          TAG=${GITHUB_REF$$*/}
+          VERSION=${TAG#v}
+          echo "Version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_ENV
