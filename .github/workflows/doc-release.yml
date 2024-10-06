@@ -1,9 +1,25 @@
-
+# @file doc-release.yml
+#
+# A Github workflow that compiles an mdbook located at docs/* and publishes it
+# to the repository's githubpages page.
+#
+##
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
 name: Documentation Upload
 
 on:
-  release:
-    types: [published]
+  # Trigger this workflow manually if necessary
+  workflow_dispatch:
+
+  # Triggers this workflow if a commit is pushed to main in which a file in
+  # docs/** has been updated
+  push:
+    branches:
+      - main
+    paths:
+      - docs/**
 
 jobs:
   build:
@@ -17,6 +33,9 @@ jobs:
 
       - name: Download Rust Tools
         uses: ./.github/actions/install-rust-tools
+
+      - name: Validate Documentation
+        run: mdbook test docs
 
       - name: Build Documentation
         run: mdbook build docs
