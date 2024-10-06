@@ -13,28 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
-
-      # Tools are cached as a group. When one or more tools are updated, a new
-      # cache will be created.
-      - name: Cache Cargo Tools
-        uses: actions/cache@v4
-        with:
-          path: |
-             ~/.cargo/bin/
-             ~/.rustup/toolchains/
-          key: ${{ runner.os }}-cargo-tools-${{ hashFiles('**/toolchain.toml')}}
-
-      - name: Install rust tools
-        run: |
-          # Extract tools section from toolchain.toml
-          sed -n '/\[tools\]/,/^$/p' toolchain.toml | grep -v '\[tools\]' | while read -r line; do
-            TOOL_NAME=$(echo "$line" | awk -F'=' '{gsub(/ /, "", $1); print $1}')
-            TOOL_VERSION=$(echo "$line" | awk -F'=' '{gsub(/["'\'']/,"",$2); print $2}')
-            cargo install "$TOOL_NAME" --version "$TOOL_VERSION" || true
-          done
-              
+  
+      - name: Download Rust Tools
+        uses: ./.github/actions/install-rust-tools
+           
       - name: Run cargo-fmt
         run: cargo fmt --all --check
 
