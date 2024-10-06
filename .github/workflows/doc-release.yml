@@ -1,0 +1,48 @@
+
+name: Documentation Upload
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build Documentation
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Rust Tools
+        uses: ./.github/actions/install-rust-tools
+
+      - name: Build Documentation
+        run: mdbook build docs
+
+      - name: Upload Github Pages Site Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: github-pages
+          path: docs/book/
+ 
+  publish:
+    name: Publish Documentation
+
+    needs: [build]
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+      pages: write
+
+    steps:
+      - name: Deploy Github Pages Site
+        uses: actions/deploy-pages@v4
+        with:
+          token: ${{ github.token }}
+          artifact_name: github-pages
+  

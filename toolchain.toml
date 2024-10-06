@@ -4,3 +4,4 @@ targets = ["x86_64-unknown-uefi", "aarch64-unknown-uefi"]
 
 [tools]
 cargo-tarpaulin = '0.31.2'
+mdbook = '0.4.40'
