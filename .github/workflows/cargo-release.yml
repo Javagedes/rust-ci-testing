@@ -39,10 +39,14 @@ jobs:
           }
 
           // Set the draft release ID as output
+          console.log(draftReleases[0].id);
           core.exportVariable('release_id', draftReleases[0].id);
 
     - name: Publish Draft Release ${{ env.release_id }}
       uses: actions/github-script@v6
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        release_id: ${{ env.release_id }}
       with:
         script: |
           const release_id = process.env.release_id;
