@@ -7,10 +7,14 @@ on:
     branches: [ "main" ]
 
 jobs:
-  setup:
-    name: Setup Environment
+  run:
+    name: Run Tests
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout Repository
