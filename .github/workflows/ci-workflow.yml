@@ -33,7 +33,7 @@ jobs:
         run: cargo build
   
       - name: Run cargo-tarpaulin
-        run: cargo tarpaulin --out Xml --timeout 180
+        run: cargo tarpaulin --workspace --out html --out xml --exclude-files **/tests/* --exclude-files **/benches/* --output-dir ./target/
       
       - name: Upload Code coverage
         uses: codecov/codecov-action@v4

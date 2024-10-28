@@ -1,6 +1,23 @@
-[package]
+[workspace]
+resolver = "2"
+
+members = [
+    "rust-ci-testing",
+    "rust-proc-macro",
+]
+
+repository = "https://github.com/javagedes/rust-ci-testing"
+license = "BSD-2-Clause-Patent"
+edition = "2021"
+rust-version = "1.80.0"
+
+[workspace.package]
 name = "rust-ci-testing"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
+[workspace.dependencies]
+syn = "^2"
+linkme = "^0.3.29"
+quote = "^1"
+proc-macro2 = "^1"
