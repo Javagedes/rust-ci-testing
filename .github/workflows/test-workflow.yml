@@ -38,7 +38,7 @@ jobs:
         touch test.txt
         git add .
         git commit -m "Auto-generated changes"
-        git push --set-upstream origin github-action/test-branch
+        git push --set-upstream origin github-action/test-branch2
 
     - name: Create PR
       run: gh pr create --title "Auto-generated PR" --body "This PR was created by a GitHub Action" --base main --head github-action/test-branch2
