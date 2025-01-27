@@ -34,17 +34,19 @@ jobs:
     # git commands like commit work using the bot user
     - name: Push Branch
       run: |
-        git checkout -b github-action/test-branch2
+        git checkout -b github-action/test-branch3
         touch test.txt
         git add .
         git commit -m "Auto-generated changes"
-        git push --set-upstream origin github-action/test-branch2
+        git push --set-upstream origin github-action/test-branch3
 
     - name: Create PR
-      run: gh pr create --title "Auto-generated PR" --body "This PR was created by a GitHub Action" --base main --head github-action/test-branch2
+      run: gh pr create --title "Auto-generated PR" --body "This PR was created by a GitHub Action" --base main --head github-action/test-branch3
+      env:
+        GH_TOKEN: ${{ github.token }}
       continue-on-error: true
 
     - name: Create PR
-      run: gh pr create --title "Auto-generated PR" --body "This PR was created by a GitHub Action" --base main --head github-action/test-branch2
+      run: gh pr create --title "Auto-generated PR" --body "This PR was created by a GitHub Action" --base main --head github-action/test-branch3
       env:
         GH_TOKEN: ${{ steps.app-token.outputs.token }}
