@@ -31,9 +31,10 @@ jobs:
     # git commands like commit work using the bot user
     - name: Push Branch
       env:
-        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        TOKEN: ${{ steps.app-token.outputs.token }}
       run: |
-        git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+        echo ${{ steps.app-token.outputs.token }}
+        git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git"
         git checkout -b github-action/test-branch
         touch test.txt
         git add .
