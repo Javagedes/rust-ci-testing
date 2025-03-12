@@ -7,38 +7,6 @@ on:
     branches: [ "main" ]
 
 jobs:
-  run:
-    name: Run Tests
-
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-  
-      - name: Download Rust Tools
-        uses: ./.github/actions/install-rust-tools
-           
-      - name: Run cargo-fmt
-        run: cargo fmt --all --check
-
-      - name: Run cargo-clippy
-        run: cargo clippy
-
-      - name: Build
-        run: cargo build
-  
-      - name: Run cargo-tarpaulin
-        run: cargo tarpaulin --workspace --out html --out xml --exclude-files **/tests/* --exclude-files **/benches/* --output-dir ./target/
-      
-      - name: Upload Code coverage
-        uses: codecov/codecov-action@v4
-        with:
-          fail_ci_if_error: true
-          files: cobertura.xml
-          token: ${{ secrets.CODECOV_TOKEN }}
-  
+  release:
+    name: Release
+    uses: ./.github/workflows/ReleaseWorkflow.yml
